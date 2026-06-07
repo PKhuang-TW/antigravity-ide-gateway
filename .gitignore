@@ -1,0 +1,13 @@
+# Ignore configuration files containing sensitive secrets
+bot/config.py
+
+# Ignore text-file bridge queues
+bot/ai_tasks.txt
+bot/ai_reply.txt
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Downloads
+bot/downloads/

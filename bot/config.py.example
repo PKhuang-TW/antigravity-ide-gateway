@@ -1,0 +1,11 @@
+# ==========================================
+# [Configuration] config.py.example - Discord Bot Settings
+# ==========================================
+
+# Discord Bot Token
+DISCORD_BOT_TOKEN = "YOUR_DISCORD_BOT_TOKEN_HERE"
+
+# Discord User ID allowed to operate the Bot
+AUTHORIZED_USER_ID = 123456789012345678
+
+TARGET_CHANNEL_NAME = "your-channel-name"  # Channel name to listen to and send messages
