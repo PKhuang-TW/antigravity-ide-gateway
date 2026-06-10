@@ -109,6 +109,86 @@ class PlanReviewModal(discord.ui.Modal, title='Add Plan Review Comment'):
         self.view_instance.accumulated_comments.append(f"[{section}]: {comment}")
         await interaction.response.send_message(f"✅ Recorded comment for `{section}` !(Current total {len(self.view_instance.accumulated_comments)} comments)", ephemeral=True)
 
+class EditCommentModal(discord.ui.Modal, title='Edit Comment'):
+    def __init__(self, main_view, index, manage_msg):
+        super().__init__()
+        self.main_view = main_view
+        self.index = index
+        self.manage_msg = manage_msg
+        
+        old_comment = self.main_view.accumulated_comments[index]
+        self.section_val = ""
+        text = old_comment
+        if "]: " in old_comment:
+            parts = old_comment.split("]: ", 1)
+            self.section_val = parts[0] + "]"
+            text = parts[1]
+            
+        self.comment_input = discord.ui.TextInput(
+            label='Edit your suggestion or question',
+            style=discord.TextStyle.paragraph,
+            default=text,
+            required=True
+        )
+        self.add_item(self.comment_input)
+
+    async def on_submit(self, interaction: discord.Interaction):
+        new_text = self.comment_input.value
+        if self.section_val:
+            new_comment = f"{self.section_val}: {new_text}"
+        else:
+            new_comment = new_text
+            
+        self.main_view.accumulated_comments[self.index] = new_comment
+        
+        new_view = ManageCommentsView(self.main_view)
+        await self.manage_msg.edit(view=new_view)
+        await interaction.response.send_message("✅ Comment updated successfully!", ephemeral=True)
+
+class ManageCommentsView(discord.ui.View):
+    def __init__(self, main_view):
+        super().__init__(timeout=None)
+        self.main_view = main_view
+        self.selected_index = None
+        
+        options = []
+        for i, comment in enumerate(self.main_view.accumulated_comments):
+            label = comment[:90] + "..." if len(comment) > 90 else comment
+            options.append(discord.SelectOption(label=label, value=str(i)))
+            
+        self.select = discord.ui.Select(placeholder='Select a comment to manage...', options=options)
+        self.select.callback = self.select_callback
+        self.add_item(self.select)
+        
+    async def select_callback(self, interaction: discord.Interaction):
+        self.selected_index = int(self.select.values[0])
+        await interaction.response.defer()
+
+    @discord.ui.button(label="📝 Edit Selected", style=discord.ButtonStyle.primary, row=1)
+    async def edit_comment(self, interaction: discord.Interaction, button: discord.ui.Button):
+        if self.selected_index is None:
+            await interaction.response.send_message("⚠️ Please select a comment from the dropdown first!", ephemeral=True)
+            return
+            
+        modal = EditCommentModal(self.main_view, self.selected_index, interaction.message)
+        await interaction.response.send_modal(modal)
+        
+    @discord.ui.button(label="🗑️ Delete Selected", style=discord.ButtonStyle.danger, row=1)
+    async def delete_comment(self, interaction: discord.Interaction, button: discord.ui.Button):
+        if self.selected_index is None:
+            await interaction.response.send_message("⚠️ Please select a comment from the dropdown first!", ephemeral=True)
+            return
+            
+        deleted = self.main_view.accumulated_comments.pop(self.selected_index)
+        
+        if not self.main_view.accumulated_comments:
+            await interaction.message.edit(content="All comments cleared.", view=None)
+        else:
+            new_view = ManageCommentsView(self.main_view)
+            await interaction.message.edit(view=new_view)
+            
+        await interaction.response.send_message(f"🗑️ Deleted the selected comment!", ephemeral=True)
+
 class PlanReviewView(discord.ui.View):
     def __init__(self, plan_text: str):
         super().__init__(timeout=None)
@@ -133,6 +213,15 @@ class PlanReviewView(discord.ui.View):
     @discord.ui.button(label="✏️ Add Comment", style=discord.ButtonStyle.primary, custom_id="btn_add_comment", row=1)
     async def add_comment(self, interaction: discord.Interaction, button: discord.ui.Button):
         await interaction.response.send_modal(PlanReviewModal(self))
+
+    @discord.ui.button(label="📋 Manage Comments", style=discord.ButtonStyle.secondary, custom_id="btn_manage_comments", row=1)
+    async def manage_comments(self, interaction: discord.Interaction, button: discord.ui.Button):
+        if not self.accumulated_comments:
+            await interaction.response.send_message("⚠️ You haven't added any comments yet!", ephemeral=True)
+            return
+            
+        view = ManageCommentsView(self)
+        await interaction.response.send_message("Please select a comment to view, edit or delete:", view=view, ephemeral=True)
 
     @discord.ui.button(label="📤 Submit All Reviews", style=discord.ButtonStyle.success, custom_id="btn_submit_review", row=1)
     async def submit_review(self, interaction: discord.Interaction, button: discord.ui.Button):
