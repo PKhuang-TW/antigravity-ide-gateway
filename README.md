@@ -6,7 +6,7 @@ This project enables a **"Text-File Bridge"** architecture:
 - The Discord bot acts purely as an intent router (Gateway) and task collector.
 - It parses your Discord messages and logs tasks into `ai_tasks.txt`.
 - A background `watcher.py` triggers the IDE Agent whenever a new task is dropped.
-- The IDE Agent executes the task locally on your machine, handles Git PRs, and replies through `ai_reply.txt` which the Discord bot forwards back to you.
+- The IDE Agent executes the task locally on your machine, handles Code Diffs/Reviews directly via Discord UI, and replies through `ai_reply.txt` which the Discord bot forwards back to you.
 
 ## 🌟 Extensible Framework Architecture (New!)
 
@@ -24,7 +24,7 @@ We've introduced `launcher.py`! You no longer need to start the discord bot and 
 ## 🌟 Why Use This Project? (Advantages)
 
 1. **Designed for Autonomous Agents (Antigravity)**: Unlike interactive IDEs like Cursor or GitHub Copilot, this bridge leverages Antigravity's core superpower: **Asynchronous Background Wakeup**. The AI can monitor background terminal processes and automatically wake up to handle tasks without human intervention.
-2. **Cross-Platform Synchronization**: Issue commands, review Pull Requests (PRs), and share the exact same project files seamlessly across both your mobile phone and your computer via Discord.
+2. **Cross-Platform Synchronization**: Issue commands, review code Diffs, and share the exact same project files seamlessly across both your mobile phone and your computer via Discord.
 3. **Shared AI Context & Memory**: We intentionally avoided building a standalone CLI agent inside the Discord bot. By delegating tasks back to your local IDE Agent, the AI responding from your phone has the *exact same memory, workspace access, and context* as the AI you use when sitting at your computer.
 4. **Total Transparency**: All AI code modifications and implementation plans are pushed directly to you via the Discord Bridge. You can comfortably review code diffs and markdown plans directly on Discord's UI.
 5. **100% Independent Multi-Bot Architecture**: Each bot instance actively pulls its own events from Discord. You do not need to configure any local ports, open any firewalls, or worry about connection limits.
@@ -34,7 +34,7 @@ We've introduced `launcher.py`! You no longer need to start the discord bot and 
 ## 🚨 Security Warning: Protect Your Config
 
 This bridge allows the internet to wake up your local IDE agent and execute commands. **It is critical that you never leak your `bot/config.py` file!**
-If a malicious actor obtains your configuration, they could forge webhook payloads and execute arbitrary commands on your local machine via the IDE agent.
+If a malicious actor obtains your token, they could hijack the bot to read your private project files, or forge messages to trick your local IDE agent into executing arbitrary code.
 **Always ensure `bot/config.py` is in your `.gitignore`!**
 
 ## 📁 Directory Structure
@@ -87,9 +87,9 @@ await bot.add_cog(IDEGatewayCore(bot, config=config, lang="en"))
 ### Step 5: Start the Services (One-Click)
 Run the launcher script to start both the Discord bridge and the background watcher simultaneously:
 ```bash
-python3 launcher.py
+python launcher.py
 ```
 
-### Step 5: Command the AI!
+### Step 6: Command the AI!
 Now, you can simply go to your Discord channel and say: `@Bot please add some unit tests for utils.py!`
 The bot will drop the task into `bot/ai_tasks.txt`, the watcher will wake up your IDE agent, and your IDE agent will get to work!

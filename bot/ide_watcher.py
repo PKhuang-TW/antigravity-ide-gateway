@@ -2,6 +2,10 @@ import time
 import os
 import sys
 
+# Ensure stdout is utf-8 on Windows
+if sys.stdout and hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8")
+
 class IDEWatcher:
     def __init__(self, task_file_path: str, skill_file_path: str = None):
         self.task_file_path = task_file_path

@@ -28,10 +28,10 @@ When you receive a task through `ai_tasks.txt`, you MUST strictly follow this wo
      - If the task came from the **IDE chat** (i.e. user typed directly to you in the IDE), you MUST reply ONLY in the IDE chat. Do NOT write to `ai_reply.txt`.
      - If the task came from **Discord** (i.e. you read it from `bot_bridge/ai_tasks.txt` or were awakened by `watcher.py`), you MUST reply ONLY via Discord.
    - When replying via Discord:
-     - **CRITICAL**: If the user's task required a plan, use the Discord Bridge Plan Review UI instead of PRs.
-     - You no longer need to provide GitHub PR URLs. If the user asks for a code review, use the Discord Bridge Code Diff feature.
-     - Write a friendly response to `bot_bridge/ai_reply.txt` explaining what you did.
+     - **CRITICAL**: If the user's task required a plan, use the Discord Bridge Plan Review UI to present it.
+     - If the user asks for a code review, use the Discord Bridge Code Diff feature.
+     - Write a friendly response to `bot/ai_reply.txt` explaining what you did.
 6. **Re-engage Watcher (ABSOLUTELY CRITICAL)**:
-   - **MANDATORY LAST STEP**: Before ending your turn (stopping tool calls), you MUST ALWAYS use the `run_command` tool to launch `python3 bot_bridge/watcher.py` as a background task. 
-   - **WHY**: The `watcher.py` script exits after delivering a message to you. If you do not restart it, the entire Discord remote control system will go offline, and the user will be completely locked out from sending further commands!
-   - **HOW**: Use `run_command` with a background task mode (e.g. setting `WaitMsBeforeAsync` appropriately). Never leave the system idle without the watcher running!
+   - **MANDATORY LAST STEP**: Before ending your turn (stopping tool calls), you MUST ALWAYS use the `run_command` tool to launch `python launcher.py` as a background task. 
+   - **WHY**: The `launcher.py` script exits after delivering a message to you. If you do not restart it, the entire Discord remote control system will go offline, and the user will be completely locked out from sending further commands!
+   - **HOW**: Use `run_command` with a background task mode (e.g. setting `WaitMsBeforeAsync` appropriately). Never leave the system idle without the launcher running!

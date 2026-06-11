@@ -4,6 +4,11 @@ from discord import app_commands
 import os
 import subprocess
 import re
+import sys
+
+# Ensure stdout is utf-8 on Windows
+if sys.stdout and hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8")
 
 # We store the languages inside the parent framework so child projects don't have to look at huge dictionaries.
 LANGUAGES = {
