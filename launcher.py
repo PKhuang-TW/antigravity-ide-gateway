@@ -3,6 +3,10 @@ import sys
 import os
 import time
 
+# Ensure stdout is utf-8 on Windows
+if sys.stdout and hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8")
+
 def main():
     base_dir = os.path.dirname(os.path.abspath(__file__))
     
