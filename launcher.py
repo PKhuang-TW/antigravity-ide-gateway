@@ -26,21 +26,23 @@ def main():
     try:
         while True:
             time.sleep(1)
-            # If watcher dies (e.g. detected a task), we want to keep bridge running,
-            # but ideally the user/IDE will restart the watcher. 
-            # Or should the launcher automatically restart the watcher?
-            # The IDE currently restarts the watcher as a background task via task list,
-            # so the launcher doesn't need to auto-restart it.
             if bridge_proc.poll() is not None:
-                print("Discord bridge stopped.")
+                print("Discord bridge stopped.", flush=True)
+                break
+            if watcher_proc.poll() is not None:
+                print("Watcher stopped (Likely received a task). Exiting launcher to wake up IDE...", flush=True)
                 break
     except KeyboardInterrupt:
-        print("Stopping processes...")
-        bridge_proc.terminate()
-        watcher_proc.terminate()
+        print("Keyboard interrupt received.")
+    finally:
+        print("Cleaning up processes...", flush=True)
+        if bridge_proc.poll() is None:
+            bridge_proc.terminate()
+        if watcher_proc.poll() is None:
+            watcher_proc.terminate()
         bridge_proc.wait()
         watcher_proc.wait()
-        print("Stopped.")
+        print("Stopped.", flush=True)
 
 if __name__ == "__main__":
     main()
