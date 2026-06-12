@@ -149,6 +149,9 @@ class IDEGatewayCore(commands.Cog):
 
     @tasks.loop(seconds=2.0)
     async def check_ai_reply(self):
+        if not self.bot.is_ready():
+            return
+            
         reply_file = self.config["ai_reply_file"]
         if os.path.exists(reply_file):
             try:
@@ -236,6 +239,9 @@ class IDEGatewayCore(commands.Cog):
 
     @app_commands.command(name="upload", description="Upload file or image for AI to process")
     async def upload_file(self, interaction: discord.Interaction, file: discord.Attachment, prompt: str = ""):
+        if interaction.channel.name != self.config["target_channel_name"]:
+            await interaction.response.send_message("❌ This command is not allowed in this channel.", ephemeral=True)
+            return
         if not self.is_authorized(interaction.user.id):
             await interaction.response.send_message(self.lang['no_permission'], ephemeral=True)
             return
@@ -257,6 +263,8 @@ class IDEGatewayCore(commands.Cog):
 
     @commands.command()
     async def diff(self, ctx):
+        if ctx.channel.name != self.config["target_channel_name"]:
+            return
         if not self.is_authorized(ctx.author.id):
             return
         try:
@@ -284,6 +292,8 @@ class IDEGatewayCore(commands.Cog):
 
     @commands.command()
     async def restart(self, ctx, filename: str = "main.py"):
+        if ctx.channel.name != self.config["target_channel_name"]:
+            return
         if not self.is_authorized(ctx.author.id):
             return
         await ctx.send(self.lang['restart_msg'].format(filename=filename))
