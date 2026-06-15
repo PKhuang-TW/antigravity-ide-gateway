@@ -160,6 +160,13 @@ class IDEGatewayCore(commands.Cog):
                     
                 if content:
                     target_channel = discord.utils.get(self.bot.get_all_channels(), name=self.config["target_channel_name"])
+                    if not target_channel:
+                        for guild in self.bot.guilds:
+                            for thread in guild.threads:
+                                if thread.name == self.config["target_channel_name"]:
+                                    target_channel = thread
+                                    break
+                    
                     if target_channel:
                         if "[PLAN_REVIEW]" in content:
                             lines = content.split('\n')
@@ -186,15 +193,12 @@ class IDEGatewayCore(commands.Cog):
                                 view = TTSView(self, text=text_chunk)
                                 await target_channel.send(f"{self.lang['ai_header']}\n{text_chunk}", view=view)
                             
-                    with open(reply_file, "w", encoding="utf-8") as f:
-                        f.write("")
+                        with open(reply_file, "w", encoding="utf-8") as f:
+                            f.write("")
+                    else:
+                        print(f"⚠️ Target channel '{self.config['target_channel_name']}' not found, cannot send reply.", flush=True)
             except Exception as e:
-                print(f"⚠️ Error reading AI message: {e}")
-                try:
-                    with open(reply_file, "w", encoding="utf-8") as f:
-                        f.write("")
-                except:
-                    pass
+                print(f"⚠️ Error reading AI message: {e}", flush=True)
 
     @commands.Cog.listener()
     async def on_ready(self):
